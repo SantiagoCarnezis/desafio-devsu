@@ -1,0 +1,133 @@
+version: '3.7'
+services:
+
+  eureka:
+    container_name: eureka
+    image: eureka_image:latest
+    build:
+      context: ./desafio-devsu-api-service-registry/
+      dockerfile: Dockerfile
+    env_file:
+      - devsu.env
+    ports:
+      - "8070:8070"
+    expose:
+      - "8070"
+
+  api-gateway:
+    container_name: api-gateway
+    image: api-gateway_image:latest
+    build:
+      context: ./desafio-devsu-api-gateway
+      dockerfile: Dockerfile
+    env_file:
+      - devsu.env
+    ports:
+      - "8090:8090"
+    expose:
+      - "8090"
+    depends_on:
+      - eureka
+
+  cliente-db:
+    container_name: cliente-db
+    image: mysql:latest # todo cambiar el tag
+    env_file:
+      - devsu.env
+    volumes:
+      - mysql_cliente_data:/var/lib/mysql
+      - ./importUsuariosDb.sql:/docker-entrypoint-initdb.d/importUsuariosDb.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    expose:
+      - "3366"
+    ports:
+      - "3366:3306"
+
+  movimiento-db:
+    container_name: movimiento-db
+    image: mysql:latest # todo cambiar el tag
+    env_file:
+      - devsu.env
+    volumes:
+      - mysql_movimiento_data:/var/lib/mysql
+      - ./importMovimientosDb.sql:/docker-entrypoint-initdb.d/importMovimientosDb.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    expose:
+      - "3367"
+    ports:
+      - "3367:3306"
+
+  movimiento-service:
+    image: movimiento_image:latest
+    build:
+      context: ./desafio-devsu-microservicio-movimientos/
+      dockerfile: Dockerfile
+    env_file:
+      - devsu.env
+    links:
+      - movimiento-db
+      - eureka
+      - api-gateway
+      - kafka
+    depends_on:
+      movimiento-db:
+        condition: service_healthy
+    expose:
+      - "8081"
+    ports:
+      - "8081:8081"
+
+  cliente-service:
+    image: cliente_image:latest
+    build:
+      context: ./desafio-devsu-microservicio-usuario/
+      dockerfile: Dockerfile
+    env_file:
+      - devsu.env
+    links:
+      - cliente-db
+      - eureka
+      - api-gateway
+      - kafka
+    depends_on:
+      cliente-db:
+        condition: service_healthy
+    expose:
+      - "8082"
+    ports:
+      - "8082:8082"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+volumes:
+  mysql_cliente_data:
+  mysql_movimiento_data:
