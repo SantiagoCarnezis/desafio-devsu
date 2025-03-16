@@ -1,52 +1,54 @@
-# Desafío Devsu
+# DevSu Challenge
 
-En este desafío, se desarrollaron dos microservicios según las especificaciones solicitadas. A continuación, se detallan las funcionalidades implementadas y algunas características adicionales:
+In this challenge, two microservices were developed according to the requested specifications. Below are the implemented features and some additional details:
 
-## Funcionalidades Básicas
+## Basic Features
 
-- **CRUD para Microservicios**: Se crearon los controladores necesarios para realizar operaciones básicas de Crear, Leer, Actualizar y Eliminar (CRUD) en los dos microservicios.
-Algunas operaciones como la modificación y eliminación de movimientos históricos no fueron incluidas, ya que no se alineaban con el modelo de negocio. Realice consultas al respecto pero no tuve una respuesta
+- **CRUD for Microservices:** Controllers were created to perform basic Create, Read, Update, and Delete (CRUD) operations in both microservices.  
+Some operations, such as modifying and deleting historical transactions, were not included as they did not align with the business model. I inquired about this but did not receive a response.
 
-## Funcionalidades Adicionales
+## Additional Features
 
-- **Cerrar Cuenta**: Implementada para cambiar el estado de una cuenta a "cerrada". Una cuenta cerrada no puede ser utilizada para realizar ni recibir pagos. Como el enunciado solicitaba que debia exitir
-comunicacion asincrona, decidi implementar esta funcionalidad mediante kafka. Quizas en un caso real seria mejor hacerlo de manera sincrona
-  
-- **Realizar Pago**: Permite transferir dinero de una cuenta a otra, validando que ambas cuentas existan, estén abiertas y tengan saldo suficiente. Crea movimientos en ambas cuentas dentro de una transaccion
+- **Close Account:** Implemented to change the status of an account to "closed." A closed account cannot be used to make or receive payments. Since the requirements specified that asynchronous communication was required, I decided to implement this functionality using Kafka. However, in a real-world scenario, synchronous communication might be a better choice.
 
-- **Obtener Datos de Cuenta**: Endpoint de ejemplo que muestra cómo implementar comunicación sincrónica entre microservicios utilizando FeignClient. Soporta distintas excepciones
+- **Make Payment:** Allows transferring money from one account to another, ensuring that both accounts exist, are open, and have sufficient funds. It creates transactions in both accounts within a single transaction.
 
-## Pruebas
+- **Get Account Data:** Sample endpoint demonstrating how to implement synchronous communication between microservices using `FeignClient`. Supports various exception scenarios.
 
-- **Tests Unitarios**: Utlizado para probar los distintos casos de uso al realizar un pago.
-- **Tests de Integración**: Utilizado para testar los distintos casos de uso de los reportes.
-- **Test de Karate**: Utilizado para probar la aplicación en un entorno Docker en ejecución. Cabe destacar que docker debe estar corriendo para ejecutar este test
+## Testing
 
-## Dockerización
+- **Unit Tests:** Used to test different use cases when processing a payment.  
+- **Integration Tests:** Used to validate various reporting use cases.  
+- **Karate Tests:** Used to test the application in a running Docker environment. It's important to note that Docker must be running to execute these tests.
 
-La aplicación está dockerizada utilizando Docker Compose, que incluye:
+## Dockerization
 
-- **Microservicios**: Movimientos y Usuarios.
-- **Bases de Datos**: Una para cada servicio.
-- **Zookeeper y Kafka**: Para la gestión de mensajes y comunicación asincrónica.
-- **Eureka**: Service registry para la gestión de servicios.
-- **API Gateway**: Centraliza las solicitudes, aunque, a modo de prueba, también permite el acceso directo a los servicios.
+The application is containerized using Docker Compose, which includes:
 
-## Archivos Adjuntos
+- **Microservices:** `Movements` and `Users`.  
+- **Databases:** One for each service.  
+- **Zookeeper and Kafka:** For message management and asynchronous communication.  
+- **Eureka:** Service registry for managing services.  
+- **API Gateway:** Centralizes requests, although, for testing purposes, direct access to services is also allowed.
 
-- **Colección Postman**: Incluye ejemplos de solicitudes para probar los endpoints mas 2 enviroments para realizar prueba mediante el api gateway o consultando directamente al servicio. https://drive.google.com/drive/folders/19O9A0YNCQCmbz6uiX9HZO5hw1xyk0N-m?usp=sharing
-- **Archivo SQL**: Incluido en el Docker Compose para facilitar la inicialización de la base de datos.
+## Attachments
 
-## Despliegue
+- **Postman Collection:** Includes request examples for testing the endpoints, along with two environments to test via the API Gateway or by directly querying the service. [Postman Collection](https://drive.google.com/drive/folders/19O9A0YNCQCmbz6uiX9HZO5hw1xyk0N-m?usp=sharing)  
+- **SQL File:** Included in the Docker Compose configuration to facilitate database initialization.
 
-Para levantar la aplicacion mediante docker, es necesario asegurarse que ninguna de los puertos que docker usa para exponer los servicios este ocupado (se los puede encontrar en el archivo dev-su.env)
-Una vez asegurado que los puertos esten disponibles, situado en el directorio donde se encuentra el archivo docker-compose.yml, se debe correr el siguiente comando
+## Deployment
+
+To start the application using Docker, ensure that none of the ports used by Docker to expose the services are occupied (they can be found in the `dev-su.env` file).  
+Once the ports are confirmed to be available, navigate to the directory containing the `docker-compose.yml` file and run the following command:
 
 ```bash
 docker-compose up -d
 ```
-o
+or  
 ```bash
 docker-compose up
 ```
-Para cualquier pregunta o aclaración adicional, no duden en contactarme a mi email scarnezis@gmail.com
+
+For any questions or additional clarifications, feel free to contact me at my email: **scarnezis@gmail.com**
+
+
