@@ -5,7 +5,7 @@ services:
     container_name: eureka
     image: eureka_image:latest
     build:
-      context: ./desafio-devsu-api-service-registry/
+      context: ./challenge-api-service-registry/
       dockerfile: Dockerfile
     env_file:
       - devsu.env
@@ -18,7 +18,7 @@ services:
     container_name: api-gateway
     image: api-gateway_image:latest
     build:
-      context: ./desafio-devsu-api-gateway
+      context: ./challenge-api-gateway
       dockerfile: Dockerfile
     env_file:
       - devsu.env
@@ -29,14 +29,14 @@ services:
     depends_on:
       - eureka
 
-  cliente-db:
-    container_name: cliente-db
-    image: mysql:latest # todo cambiar el tag
+  customer-db:
+    container_name: customer-db
+    image: mysql:latest
     env_file:
       - devsu.env
     volumes:
       - mysql_cliente_data:/var/lib/mysql
-      - ./importUsuariosDb.sql:/docker-entrypoint-initdb.d/importUsuariosDb.sql
+      - ./importUserDb.sql:/docker-entrypoint-initdb.d/importUserDb.sql
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
       interval: 10s
@@ -48,14 +48,14 @@ services:
     ports:
       - "3366:3306"
 
-  movimiento-db:
-    container_name: movimiento-db
-    image: mysql:latest # todo cambiar el tag
+  movement-db:
+    container_name: movement-db
+    image: mysql:latest
     env_file:
       - devsu.env
     volumes:
-      - mysql_movimiento_data:/var/lib/mysql
-      - ./importMovimientosDb.sql:/docker-entrypoint-initdb.d/importMovimientosDb.sql
+      - mysql_movement_data:/var/lib/mysql
+      - ./importMovementDb.sql:/docker-entrypoint-initdb.d/importMovementDb.sql
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
       interval: 10s
@@ -67,20 +67,20 @@ services:
     ports:
       - "3367:3306"
 
-  movimiento-service:
-    image: movimiento_image:latest
+  movement-service:
+    image: movement_image:latest
     build:
-      context: ./desafio-devsu-microservicio-movimientos/
+      context: ./challenge-movements-service
       dockerfile: Dockerfile
     env_file:
       - devsu.env
     links:
-      - movimiento-db
+      - movement-db
       - eureka
       - api-gateway
       - kafka
     depends_on:
-      movimiento-db:
+      movement-db:
         condition: service_healthy
     expose:
       - "8081"
@@ -90,17 +90,17 @@ services:
   cliente-service:
     image: cliente_image:latest
     build:
-      context: ./desafio-devsu-microservicio-usuario/
+      context: ./challenge-user-service/
       dockerfile: Dockerfile
     env_file:
       - devsu.env
     links:
-      - cliente-db
+      - customer-db
       - eureka
       - api-gateway
       - kafka
     depends_on:
-      cliente-db:
+      customer-db:
         condition: service_healthy
     expose:
       - "8082"
@@ -130,4 +130,4 @@ services:
 
 volumes:
   mysql_cliente_data:
-  mysql_movimiento_data:
+  mysql_movement_data:
